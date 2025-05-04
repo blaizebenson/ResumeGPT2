@@ -14,7 +14,11 @@ resume_file = st.file_uploader("📄 Upload Resume (PDF)", type="pdf")
 job_file = st.file_uploader("📝 Upload Job Description (PDF)", type="pdf")
 
 # OpenAI API Key
-api_key = st.text_input("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", type="password")
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+api_key = os.getenv("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", type="password")
 
 # Tone selector
 tone = st.selectbox("✍️ Choose Cover Letter Tone:", ["Professional", "Confident", "Creative"])
