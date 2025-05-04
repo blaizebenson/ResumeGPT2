@@ -6,19 +6,25 @@ from openai import OpenAI
 
 # App title
 st.title("📄 ResumeGPT2: GPT-4 Cover Letter Generator")
-st.markdown("Upload your resume and job description, and get a personalized, professional cover letter powered by GPT-4.")
+st.markdown("Upload your resume and job description to generate a personalized cover letter powered by GPT-4.")
 
 # File uploads
 resume_file = st.file_uploader("📄 Upload Resume (PDF)", type="pdf")
 job_file = st.file_uploader("📝 Upload Job Description (PDF)", type="pdf")
 
-# OpenAI API Key input
+# OpenAI API Key
 api_key = st.text_input("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", type="password")
 
-# Cover letter tone selector
+# Tone selector
 tone = st.selectbox("✍️ Choose Cover Letter Tone:", ["Professional", "Confident", "Creative"])
 
-# Ensure spaCy model is available
+# Optional personalization fields
+st.markdown("### ✨ Add Personal Touch (Optional)")
+interest = st.text_area("💬 Why are you interested in this job or company?")
+goals = st.text_area("🎯 What are your career goals?")
+traits = st.text_area("🌟 What qualities, values, or soft skills do you want to highlight?")
+
+# Load spaCy model
 try:
     nlp = spacy.load("en_core_web_sm")
 except OSError:
@@ -30,7 +36,7 @@ def extract_text(uploaded_file):
     doc = fitz.open(stream=uploaded_file.read(), filetype="pdf")
     return "".join([page.get_text() for page in doc])
 
-# Helper: Extract relevant keywords
+# Helper: Extract keywords
 def extract_keywords(text):
     doc = nlp(text)
     return list(set([token.lemma_ for token in doc if token.pos_ in ["NOUN", "PROPN"] and not token.is_stop]))
@@ -41,18 +47,27 @@ if resume_file and job_file and api_key:
         resume_text = extract_text(resume_file)
         job_text = extract_text(job_file)
 
-        # Compare and collect shared keywords
         resume_keywords = extract_keywords(resume_text)
         job_keywords = extract_keywords(job_text)
         shared_keywords = set(resume_keywords) & set(job_keywords)
 
-        # Real-time keyword match score
+        # Keyword match score
         match_score = round(100 * len(shared_keywords) / max(len(job_keywords), 1))
         st.info(f"🧠 Keyword Match Score: {match_score}%")
 
-        # Prepare GPT prompt
+        # Sidebar: show matched keywords
+        if shared_keywords:
+            st.sidebar.markdown("### 🔍 Matched Keywords")
+            st.sidebar.write(", ".join(sorted(shared_keywords)[:10]))
+
+        # GPT Prompt
         prompt = f"""
-You are a professional resume writer. Write a {tone.lower()} cover letter based on the RESUME and JOB DESCRIPTION below:
+You are a professional resume writer. Write a {tone.lower()} cover letter tailored to the following resume and job description.
+
+The candidate has shared the following personal details:
+- Interest in the company: {interest}
+- Career goals: {goals}
+- Values and traits to highlight: {traits}
 
 RESUME:
 {resume_text}
@@ -63,10 +78,9 @@ JOB DESCRIPTION:
 Shared Keywords: {', '.join(shared_keywords)}
 """
 
-        # Initialize OpenAI client
         client = OpenAI(api_key=api_key)
 
-        with st.spinner("💬 Generating your custom cover letter using GPT-4..."):
+        with st.spinner("💬 Generating your cover letter..."):
             response = client.chat.completions.create(
                 model="gpt-4",
                 messages=[{"role": "user", "content": prompt}]
