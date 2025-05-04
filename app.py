@@ -25,7 +25,7 @@ interest = st.text_area("💬 Why are you interested in this job or company?")
 goals = st.text_area("🎯 What are your career goals?")
 traits = st.text_area("🌟 What qualities, values, or soft skills do you want to highlight?")
 
-# New fields for date/company details
+# Company Header Fields
 st.markdown("### 🏢 Customize Header (Optional)")
 company_name = st.text_input("Company Name")
 company_address = st.text_area("Company Address")
@@ -38,17 +38,17 @@ except OSError:
     spacy.cli.download("en_core_web_sm")
     nlp = spacy.load("en_core_web_sm")
 
-# Helper: Extract PDF text
+# Extract PDF Text
 def extract_text(uploaded_file):
     doc = fitz.open(stream=uploaded_file.read(), filetype="pdf")
     return "".join([page.get_text() for page in doc])
 
-# Helper: Extract keywords
+# Extract Keywords
 def extract_keywords(text):
     doc = nlp(text)
     return list(set([token.lemma_ for token in doc if token.pos_ in ["NOUN", "PROPN"] and not token.is_stop]))
 
-# Template preview
+# Preview Template
 with st.expander("📋 Preview Template Structure"):
     default_template = (
         "[Today's Date]\n\n"
@@ -63,7 +63,7 @@ with st.expander("📋 Preview Template Structure"):
     )
     st.code(default_template, language="markdown")
 
-# Main logic
+# Main Logic
 if resume_file and job_file and api_key:
     try:
         resume_text = extract_text(resume_file)
@@ -73,43 +73,40 @@ if resume_file and job_file and api_key:
         job_keywords = extract_keywords(job_text)
         shared_keywords = set(resume_keywords) & set(job_keywords)
 
-        # Keyword match score
+        # Keyword Match Score
         match_score = round(100 * len(shared_keywords) / max(len(job_keywords), 1))
         st.info(f"🧠 Keyword Match Score: {match_score}%")
 
-        # Sidebar: show matched keywords
         if shared_keywords:
             st.sidebar.markdown("### 🔍 Matched Keywords")
             st.sidebar.write(", ".join(sorted(shared_keywords)[:10]))
 
-        # Insert dynamic header values
+        # Build Header
         today_date = date.today().strftime("%B %d, %Y")
-        header = (
-            f"{today_date}\n\n"
-            f"{hiring_manager or '[Hiring Manager Name]'}\n"
-            f"{company_name or '[Company Name]'}\n"
-            f"{company_address or '[Company Address]'}\n\n"
-        )
+        header = f"""{today_date}
 
-        # Refined GPT Prompt
+{hiring_manager or '[Hiring Manager Name]'}
+{company_name or '[Company Name]'}
+{company_address or '[Company Address]'}
+"""
+
+        # GPT Prompt
         prompt = f"""
 You are a professional resume writer. Write a {tone.lower()} cover letter tailored to the following resume and job description.
 
-Begin the letter with a strong hook that shows enthusiasm and alignment with the company's mission (e.g., sustainability, innovation, energy efficiency).
+Start the letter with the following header exactly (already formatted):
 
-Then structure the body into short, focused paragraphs:
-1. Highlight the candidate's education and one most relevant experience.
-2. Focus on technical skills and achievements. Include specific tools, responsibilities, and quantify results if possible.
-3. Optionally reference any Power TakeOff initiatives or values inferred from the job description.
-4. End with a polished, enthusiastic closing that encourages next steps and expresses excitement.
-
-Use the following personal details where relevant:
-- Interest: {interest}
-- Career goals: {goals}
-- Traits/values: {traits}
-
-Start the letter with this header (omit "Dear" in the header):
 {header}
+
+Then write:
+- A strong opening paragraph that shows passion and alignment with the company’s mission.
+- One paragraph on education and most relevant experience.
+- One paragraph detailing the candidate's technical skills and accomplishments. Include tools or platforms used and quantify results when possible.
+- One paragraph incorporating the candidate's stated interest, career goals, and values:
+    - Interest: {interest}
+    - Goals: {goals}
+    - Values: {traits}
+- A polished closing that expresses excitement and openness to further discussion.
 
 RESUME:
 {resume_text}
