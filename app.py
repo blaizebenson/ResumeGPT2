@@ -15,7 +15,13 @@ job_file = st.file_uploader("📝 Upload Job Description (PDF)", type="pdf")
 api_key = st.text_input("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", type="password")
 
 # Load NLP model
-nlp = spacy.load("en_core_web_sm")
+import spacy.cli
+try:
+    nlp = spacy.load("en_core_web_sm")
+except:
+    spacy.cli.download("en_core_web_sm")
+    nlp = spacy.load("en_core_web_sm")
+
 
 # Helper: Extract PDF text
 def extract_text(uploaded_file):
