@@ -1,9 +1,3 @@
-from dotenv import load_dotenv
-import os
-
-load_dotenv()
-api_key = os.getenv("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")
-
 import streamlit as st
 import fitz  # PyMuPDF
 import spacy
