@@ -3,6 +3,7 @@ import fitz  # PyMuPDF
 import spacy
 import spacy.cli
 from openai import OpenAI
+from datetime import date
 
 # App title
 st.title("📄 ResumeGPT2: GPT-4 Cover Letter Generator")
@@ -24,6 +25,12 @@ interest = st.text_area("💬 Why are you interested in this job or company?")
 goals = st.text_area("🎯 What are your career goals?")
 traits = st.text_area("🌟 What qualities, values, or soft skills do you want to highlight?")
 
+# New fields for date/company details
+st.markdown("### 🏢 Customize Header (Optional)")
+company_name = st.text_input("Company Name")
+company_address = st.text_area("Company Address")
+hiring_manager = st.text_input("Hiring Manager Name")
+
 # Load spaCy model
 try:
     nlp = spacy.load("en_core_web_sm")
@@ -40,6 +47,21 @@ def extract_text(uploaded_file):
 def extract_keywords(text):
     doc = nlp(text)
     return list(set([token.lemma_ for token in doc if token.pos_ in ["NOUN", "PROPN"] and not token.is_stop]))
+
+# Default template preview (optional)
+with st.expander("📋 Preview Template Structure"):
+    default_template = (
+        "[Today's Date]\n\n"
+        "[Hiring Manager Name]\n"
+        "[Company Name]\n"
+        "[Company Address]\n\n"
+        "Dear [Hiring Manager Name],\n\n"
+        "I am writing to express my interest in the [Position Title] at [Company Name]. "
+        "With my background in [Your Background], I believe I would be a valuable addition to your team.\n\n"
+        "Sincerely,\n"
+        "[Your Name]"
+    )
+    st.code(default_template, language="markdown")
 
 # Main logic
 if resume_file and job_file and api_key:
@@ -60,6 +82,15 @@ if resume_file and job_file and api_key:
             st.sidebar.markdown("### 🔍 Matched Keywords")
             st.sidebar.write(", ".join(sorted(shared_keywords)[:10]))
 
+        # Insert dynamic header values
+        today_date = date.today().strftime("%B %d, %Y")
+        header = (
+            f"{today_date}\n\n"
+            f"{hiring_manager or '[Hiring Manager Name]'}\n"
+            f"{company_name or '[Company Name]'}\n"
+            f"{company_address or '[Company Address]'}\n\n"
+        )
+
         # GPT Prompt
         prompt = f"""
 You are a professional resume writer. Write a {tone.lower()} cover letter tailored to the following resume and job description.
@@ -68,6 +99,11 @@ The candidate has shared the following personal details:
 - Interest in the company: {interest}
 - Career goals: {goals}
 - Values and traits to highlight: {traits}
+
+Begin the letter with this header (no need to include Dear line):
+{header}
+
+Then continue with a personalized body.
 
 RESUME:
 {resume_text}
