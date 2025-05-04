@@ -48,7 +48,7 @@ def extract_keywords(text):
     doc = nlp(text)
     return list(set([token.lemma_ for token in doc if token.pos_ in ["NOUN", "PROPN"] and not token.is_stop]))
 
-# Default template preview (optional)
+# Template preview
 with st.expander("📋 Preview Template Structure"):
     default_template = (
         "[Today's Date]\n\n"
@@ -91,19 +91,25 @@ if resume_file and job_file and api_key:
             f"{company_address or '[Company Address]'}\n\n"
         )
 
-        # GPT Prompt
+        # Refined GPT Prompt
         prompt = f"""
 You are a professional resume writer. Write a {tone.lower()} cover letter tailored to the following resume and job description.
 
-The candidate has shared the following personal details:
-- Interest in the company: {interest}
+Begin the letter with a strong hook that shows enthusiasm and alignment with the company's mission (e.g., sustainability, innovation, energy efficiency).
+
+Then structure the body into short, focused paragraphs:
+1. Highlight the candidate's education and one most relevant experience.
+2. Focus on technical skills and achievements. Include specific tools, responsibilities, and quantify results if possible.
+3. Optionally reference any Power TakeOff initiatives or values inferred from the job description.
+4. End with a polished, enthusiastic closing that encourages next steps and expresses excitement.
+
+Use the following personal details where relevant:
+- Interest: {interest}
 - Career goals: {goals}
-- Values and traits to highlight: {traits}
+- Traits/values: {traits}
 
-Begin the letter with this header (no need to include Dear line):
+Start the letter with this header (omit "Dear" in the header):
 {header}
-
-Then continue with a personalized body.
 
 RESUME:
 {resume_text}
