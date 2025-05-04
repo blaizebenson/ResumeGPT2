@@ -15,6 +15,9 @@ job_file = st.file_uploader("📝 Upload Job Description (PDF)", type="pdf")
 # OpenAI API Key input
 api_key = st.text_input("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", type="password")
 
+# Cover letter tone selector
+tone = st.selectbox("✍️ Choose Cover Letter Tone:", ["Professional", "Confident", "Creative"])
+
 # Ensure spaCy model is available
 try:
     nlp = spacy.load("en_core_web_sm")
@@ -43,9 +46,13 @@ if resume_file and job_file and api_key:
         job_keywords = extract_keywords(job_text)
         shared_keywords = set(resume_keywords) & set(job_keywords)
 
+        # Real-time keyword match score
+        match_score = round(100 * len(shared_keywords) / max(len(job_keywords), 1))
+        st.info(f"🧠 Keyword Match Score: {match_score}%")
+
         # Prepare GPT prompt
         prompt = f"""
-You are a professional resume writer. Based on the RESUME and JOB DESCRIPTION below, write a tailored, confident, professional cover letter.
+You are a professional resume writer. Write a {tone.lower()} cover letter based on the RESUME and JOB DESCRIPTION below:
 
 RESUME:
 {resume_text}
