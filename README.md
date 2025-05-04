@@ -6,7 +6,8 @@ An AI-powered tool that generates **custom cover letters** using GPT-4, your upl
 
 ## 🔗 Live Demo
 
-👉 [Streamlit App]([https://YOUR-STREAMLIT-APP-LINK-HERE](https://resumegpt2-4rikzklkqx3btcpxumsbib.streamlit.app/))
+👉 [Streamlit App] https://resumegpt2-4rikzklkqx3btcpxumsbib.streamlit.app/
+
 
 ---
 
