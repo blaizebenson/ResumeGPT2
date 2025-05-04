@@ -4,6 +4,12 @@ import spacy
 import spacy.cli
 from openai import OpenAI
 from datetime import date
+from dotenv import load_dotenv
+import os
+
+# Load API key securely
+load_dotenv()
+api_key = os.getenv("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")
 
 # App title
 st.title("📄 ResumeGPT2: GPT-4 Cover Letter Generator")
@@ -12,13 +18,6 @@ st.markdown("Upload your resume and job description to generate a personalized c
 # File uploads
 resume_file = st.file_uploader("📄 Upload Resume (PDF)", type="pdf")
 job_file = st.file_uploader("📝 Upload Job Description (PDF)", type="pdf")
-
-# OpenAI API Key
-from dotenv import load_dotenv
-import os
-
-load_dotenv()
-api_key = os.getenv("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", type="password")
 
 # Tone selector
 tone = st.selectbox("✍️ Choose Cover Letter Tone:", ["Professional", "Confident", "Creative"])
@@ -52,7 +51,7 @@ def extract_keywords(text):
     doc = nlp(text)
     return list(set([token.lemma_ for token in doc if token.pos_ in ["NOUN", "PROPN"] and not token.is_stop]))
 
-# Preview Template
+# Template Preview
 with st.expander("📋 Preview Template Structure"):
     default_template = (
         "[Today's Date]\n\n"
@@ -85,7 +84,7 @@ if resume_file and job_file and api_key:
             st.sidebar.markdown("### 🔍 Matched Keywords")
             st.sidebar.write(", ".join(sorted(shared_keywords)[:10]))
 
-        # Build Header
+        # Header for the letter
         today_date = date.today().strftime("%B %d, %Y")
         header = f"""{today_date}
 
