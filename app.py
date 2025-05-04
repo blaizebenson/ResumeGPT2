@@ -13,7 +13,7 @@ resume_file = st.file_uploader("📄 Upload Resume (PDF)", type="pdf")
 job_file = st.file_uploader("📝 Upload Job Description (PDF)", type="pdf")
 
 # OpenAI API Key input
-api_key = st.text_input("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", type="password")
+api_key = st.text_input("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", type="password")
 
 # Ensure spaCy model is available
 try:
